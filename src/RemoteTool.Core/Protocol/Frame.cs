@@ -10,6 +10,7 @@ public sealed class FrameReader
     private readonly Stream _s;
     private readonly Func<byte, bool> _isKnown;
     private long _bytesRead;
+    private long _lastActivity = System.Diagnostics.Stopwatch.GetTimestamp();
 
     public FrameReader(Stream s, Func<byte, bool> isKnownType, int maxPayload = ProtocolConstants.PreAuthMaxFramePayload)
     {
@@ -21,6 +22,8 @@ public sealed class FrameReader
     /// <summary>Current payload ceiling; raise only after authentication.</summary>
     public int MaxPayload { get; set; }
     public long BytesRead => Interlocked.Read(ref _bytesRead);
+    /// <summary>Stopwatch timestamp of the last byte received, even mid-frame (a big frame on a slow link is activity, not silence).</summary>
+    public long LastActivityTimestamp => Volatile.Read(ref _lastActivity);
 
     public async ValueTask<Frame> ReadAsync(CancellationToken ct)
     {
@@ -48,6 +51,7 @@ public sealed class FrameReader
                 throw new ProtocolException("connection closed mid-frame");
             }
             off += n;
+            Volatile.Write(ref _lastActivity, System.Diagnostics.Stopwatch.GetTimestamp());
         }
     }
 }

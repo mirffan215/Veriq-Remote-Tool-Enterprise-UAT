@@ -69,6 +69,12 @@ internal sealed class SessionPump
         }
     }
 
+    private int _pingInFlight;
+
+    /// <summary>
+    /// Silence is judged from the last byte received (also mid-frame), and independently of sending: a ping is queued behind any frame being
+    /// written, so if the link stalls the write never returns; the timeout check must still fire instead of freezing the session.
+    /// </summary>
     private async Task HeartbeatAsync(CancellationTokenSource cts)
     {
         try
@@ -76,16 +82,26 @@ internal sealed class SessionPump
             using var timer = new PeriodicTimer(_interval);
             while (await timer.WaitForNextTickAsync(cts.Token).ConfigureAwait(false))
             {
-                if (Stopwatch.GetElapsedTime(Volatile.Read(ref _lastRx)) > _timeout)
+                var lastRx = Math.Max(Volatile.Read(ref _lastRx), _reader.LastActivityTimestamp);
+                if (Stopwatch.GetElapsedTime(lastRx) > _timeout)
                 {
                     _timedOut = true;
                     cts.Cancel();
                     return;
                 }
-                await _writer.WriteAsync(MessageType.Ping, new PingMessage((ulong)Environment.TickCount64).Serialize(), cts.Token).ConfigureAwait(false);
+                if (Interlocked.CompareExchange(ref _pingInFlight, 1, 0) == 0)
+                    _ = SendPingAsync(cts);
             }
         }
         catch (OperationCanceledException) { }
         catch (Exception) { cts.Cancel(); }
+    }
+
+    private async Task SendPingAsync(CancellationTokenSource cts)
+    {
+        try { await _writer.WriteAsync(MessageType.Ping, new PingMessage((ulong)Environment.TickCount64).Serialize(), cts.Token).ConfigureAwait(false); }
+        catch (OperationCanceledException) { }
+        catch (Exception) { try { cts.Cancel(); } catch (ObjectDisposedException) { } }   // the pump may already be finished and disposed
+        finally { Interlocked.Exchange(ref _pingInFlight, 0); }
     }
 }
