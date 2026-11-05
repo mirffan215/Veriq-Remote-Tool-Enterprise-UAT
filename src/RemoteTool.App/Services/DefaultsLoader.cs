@@ -22,10 +22,15 @@ public static class DefaultsLoader
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
 
-        DeploymentDefaults embedded = DeploymentDefaults.Empty;
-        using (var s = typeof(DefaultsLoader).Assembly.GetManifestResourceStream("RemoteTool.defaults.json"))
-            if (s is not null) { using var r = new StreamReader(s); embedded = DeploymentDefaults.Parse(r.ReadToEnd()); }
+        return DeploymentDefaults.Merge(fromEnvOrArgs, fromFile, LoadEmbedded());
+    }
 
-        return DeploymentDefaults.Merge(fromEnvOrArgs, fromFile, embedded);
+    /// <summary>Only the values built into the exe (used by locked builds, where env/file/args must not override them).</summary>
+    public static DeploymentDefaults LoadEmbedded()
+    {
+        using var s = typeof(DefaultsLoader).Assembly.GetManifestResourceStream("RemoteTool.defaults.json");
+        if (s is null) return DeploymentDefaults.Empty;
+        using var r = new StreamReader(s);
+        return DeploymentDefaults.Parse(r.ReadToEnd());
     }
 }

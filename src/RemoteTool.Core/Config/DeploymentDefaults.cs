@@ -40,6 +40,16 @@ public sealed record DeploymentDefaults(string Relay, string Fingerprint, string
         return new DeploymentDefaults(First(d => d.Relay), First(d => d.Fingerprint), First(d => d.AccessKey));
     }
 
+    /// <summary>Locked builds: the embedded relay settings REPLACE whatever is stored (the user cannot change them). Returns true if anything changed.</summary>
+    public bool ForceApplyTo(AppSettings s, ISecretProtector protector)
+    {
+        var changed = false;
+        if (Relay.Length > 0 && s.RelayAddress != Relay) { s.RelayAddress = Relay; changed = true; }
+        if (s.RelayFingerprint != Fingerprint) { s.RelayFingerprint = Fingerprint; changed = true; }
+        if (AccessKey.Length > 0 && (s.RelayAccessKeyProtected.Length == 0 || protector.Unprotect(s.RelayAccessKeyProtected) != AccessKey)) { s.RelayAccessKeyProtected = protector.Protect(AccessKey); changed = true; }
+        return changed;
+    }
+
     /// <summary>Fills ONLY settings the user/admin has not set. Returns true if anything changed. The access key is stored protected.</summary>
     public bool ApplyTo(AppSettings s, ISecretProtector protector)
     {

@@ -41,8 +41,11 @@ public partial class App : Application
         var store = new SettingsStore(paths.SettingsFile);
         store.Load();
         // Zero setup for users: company relay defaults (env/args > file next to exe > built into the exe) fill only EMPTY settings.
-        var defaults = DefaultsLoader.Load(exeDir, e.Args);
-        if (defaults.ApplyTo(store.Current, new DpapiProtector())) store.Save();
+        BrandingLoader.Load();
+        var lockedRelay = BrandingLoader.Branding.RelayLocked && !DefaultsLoader.LoadEmbedded().IsEmpty;
+        // Locked build: the relay baked in by the organization setup wins over everything and cannot be edited in the UI.
+        var defaults = lockedRelay ? DefaultsLoader.LoadEmbedded() : DefaultsLoader.Load(exeDir, e.Args);
+        if ((lockedRelay ? defaults.ForceApplyTo(store.Current, new DpapiProtector()) : defaults.ApplyTo(store.Current, new DpapiProtector()))) store.Save();
 
         var hostAudit = new JsonlAuditLog(paths.LogDirectory, "host");
         var viewerAudit = new JsonlAuditLog(paths.LogDirectory, "viewer");
@@ -50,7 +53,6 @@ public partial class App : Application
         hostAudit.Write("id_issued", ("id", store.Current.Id), ("firstRun", firstRun));
 
         var protector = new DpapiProtector();
-        BrandingLoader.Load();
         hostAudit.Write("branding", ("organization", BrandingLoader.Branding.Organization), ("maxConcurrentUsers", BrandingLoader.Branding.MaxConcurrentUsers));
         ApplyLanguage(store.Current.Language);
         ThemeManager.Apply(store.Current.Theme);

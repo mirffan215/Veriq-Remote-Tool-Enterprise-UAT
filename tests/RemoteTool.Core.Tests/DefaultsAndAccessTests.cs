@@ -142,3 +142,20 @@ public class BrandingTests
     [Fact]
     public void RoundTripsArabicNames() => Assert.Equal("شركة النور", Branding.Parse(new Branding("شركة النور", 5, "Toolveriq").ToJson()).Organization);
 }
+
+public class LockedRelayTests
+{
+    private sealed class Plain : ISecretProtector { public string Protect(string t) => "P:" + t; public string Unprotect(string t) => t.Substring(2); }
+
+    [Fact]
+    public void ForceApply_ReplacesUserValues_IsIdempotent_AndBrandingParsesTheLockFlag()
+    {
+        var d = new DeploymentDefaults("relay.corp:443", "AABB", "k1");
+        var s = new AppSettings { RelayAddress = "other:1", RelayFingerprint = "ZZ", RelayAccessKeyProtected = "P:old" };
+        Assert.True(d.ForceApplyTo(s, new Plain()));
+        Assert.Equal(("relay.corp:443", "AABB", "P:k1"), (s.RelayAddress, s.RelayFingerprint, s.RelayAccessKeyProtected));
+        Assert.False(d.ForceApplyTo(s, new Plain()));
+        Assert.True(Branding.Parse("{\"organization\":\"A\",\"relayLocked\":true}").RelayLocked);
+        Assert.False(Branding.Parse("{\"organization\":\"A\"}").RelayLocked);
+    }
+}

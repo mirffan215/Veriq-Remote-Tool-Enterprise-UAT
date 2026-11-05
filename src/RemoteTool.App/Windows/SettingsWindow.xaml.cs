@@ -33,6 +33,7 @@ public partial class SettingsWindow : Window
         LangSystem.IsChecked = s.Language != "en" && s.Language != "ar";
         LangEn.IsChecked = s.Language == "en";
         LangAr.IsChecked = s.Language == "ar";
+        if (BrandingLoader.Branding.RelayLocked) RelayPanel.Visibility = Visibility.Collapsed;   // relay is set by the organization build
         RelayAddressBox.Text = s.RelayAddress;
         RelayFingerprintBox.Text = s.RelayFingerprint;
         DirectBox.IsChecked = s.DirectListenerEnabled;
@@ -116,8 +117,9 @@ public partial class SettingsWindow : Window
     {
         var s = _store.Current;
         if (!int.TryParse(DirectPortBox.Text, out var port) || port is < 1 or > 65535) { SettingsStatus.Text = Loc.T("Err_Port"); return; }
-        var relay = RelayAddressBox.Text.Trim();
-        if (relay.Length > 0 && !RelayEndpoint.TryParseList(relay, "", "", out _)) { SettingsStatus.Text = Loc.T("Err_Relay"); return; }
+        var relayLocked = BrandingLoader.Branding.RelayLocked;
+        var relay = relayLocked ? s.RelayAddress : RelayAddressBox.Text.Trim();
+        if (!relayLocked && relay.Length > 0 && !RelayEndpoint.TryParseList(relay, "", "", out _)) { SettingsStatus.Text = Loc.T("Err_Relay"); return; }
 
         var portChanged = port != s.DirectPort;
         s.DisplayName = NameSanitizer.Clean(DisplayNameBox.Text, Environment.MachineName);
@@ -126,10 +128,13 @@ public partial class SettingsWindow : Window
         s.AllowFileTransfer = FilesBox.IsChecked == true;
         s.EnableH264 = H264Box.IsChecked == true;
         s.Language = LangAr.IsChecked == true ? "ar" : LangEn.IsChecked == true ? "en" : "System";
-        s.RelayAddress = relay;
-        s.RelayFingerprint = RelayFingerprintBox.Text.Trim();
-        if (RelayKeyBox.Password.Length > 0) s.RelayAccessKeyProtected = _protector.Protect(RelayKeyBox.Password);
-        RelayKeyBox.Clear();
+        if (!relayLocked)
+        {
+            s.RelayAddress = relay;
+            s.RelayFingerprint = RelayFingerprintBox.Text.Trim();
+            if (RelayKeyBox.Password.Length > 0) s.RelayAccessKeyProtected = _protector.Protect(RelayKeyBox.Password);
+            RelayKeyBox.Clear();
+        }
         s.DirectListenerEnabled = DirectBox.IsChecked == true;
         s.LanVisible = LanVisibleBox.IsChecked == true && s.DirectListenerEnabled;
         s.LanFirst = LanFirstBox.IsChecked == true;

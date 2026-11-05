@@ -7,6 +7,7 @@ Run `scripts\build-wizard.ps1` on a Windows build machine. The form asks for:
 | Organization name | Shown in the main window footer and title bar; written to the audit log (`branding` event) |
 | Company logo | Normalized to PNG (max 256 px high) and embedded; shown in the footer |
 | Concurrent users | Shown as "Up to N concurrent users"; also written to `relay.env` as `RELAY__MaxConcurrentSessions=N` for that organization's relay. 0 = unlimited |
+| Relay address / fingerprint / access key | Baked into the exe (via `RT_DEFAULT_RELAY*` environment variables during the build; the key is never written to `branding\`). With **Hide and lock relay settings** ticked (default) the exe always uses these values, ignores env/file/MSI overrides, and the Relay fields disappear from Settings → Advanced |
 | Developed by | Defaults to `Toolveriq`, shown in the footer |
 
 Output: `branding\<org>\` (branding.json, logo.png, relay.env) and `artifacts\<org>\RemoteTool.exe`. Repeat per customer.

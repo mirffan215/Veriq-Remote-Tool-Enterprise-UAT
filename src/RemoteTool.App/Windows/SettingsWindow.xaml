@@ -48,6 +48,7 @@
       <Expander Header="{loc:T Advanced}" Margin="0,16,0,0">
         <StackPanel Margin="0,8,0,0">
           <TextBlock Text="{loc:T Advanced_Help}" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" />
+          <StackPanel x:Name="RelayPanel">
           <TextBlock Text="{loc:T Relay_Address}" Margin="0,12,0,2" Foreground="{DynamicResource MutedBrush}" />
           <TextBox x:Name="RelayAddressBox" FlowDirection="LeftToRight" />
           <TextBlock Text="{loc:T Relay_Key}" Margin="0,8,0,2" Foreground="{DynamicResource MutedBrush}" />
@@ -58,6 +59,7 @@
           </Grid>
           <TextBlock Text="{loc:T Relay_Fingerprint}" Margin="0,8,0,2" Foreground="{DynamicResource MutedBrush}" />
           <TextBox x:Name="RelayFingerprintBox" FlowDirection="LeftToRight" FontFamily="Consolas" />
+          </StackPanel>
 
           <CheckBox x:Name="DirectBox" Content="{loc:T Direct_Enable}" Margin="0,14,0,0" />
           <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
