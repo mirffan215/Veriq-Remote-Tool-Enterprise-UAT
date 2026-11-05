@@ -169,4 +169,5 @@
  <data name="Firewall_Remove" xml:space="preserve"><value>إزالة قواعد جدار الحماية</value></data>
  <data name="Brand_DevelopedBy" xml:space="preserve"><value>تطوير {0}</value></data>
  <data name="Brand_Users" xml:space="preserve"><value>حتى {0} مستخدمين متزامنين</value></data>
+ <data name="Err_LimitReached" xml:space="preserve"><value>تم بلوغ حد المستخدمين: تسمح المؤسسة بحتى {0} جلسات متزامنة. حاول مجددًا عند انتهاء إحداها.</value></data>
 </root>

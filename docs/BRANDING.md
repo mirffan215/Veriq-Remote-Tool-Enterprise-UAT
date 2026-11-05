@@ -13,5 +13,5 @@ Output: `branding\<org>\` (branding.json, logo.png, relay.env) and `artifacts\<o
 CI / no form: `scripts\build-wizard.ps1 -FromFile branding\acme` or `scripts\publish-app.ps1 -BrandingDir branding\acme`
 (MSBuild: `-p:BrandingDir=...` or env `RT_BRANDING_DIR`). Flags: `-NoBuild`, `-SignThumbprint`, `-SkipTests`.
 
-**Seat limit is enforced by the relay, not the exe**: an exe-side check could be patched out. Deploy the customer's relay with the generated `relay.env`
+**Seat limit:** the relay is the authority (an exe-side check could be patched out). The exe adds a best-effort pre-check: before connecting through the relay, the viewer asks it for the active session count (new relay messages `Usage`/`UsageReply`, count only) and shows "User limit reached" if the count is at the limit. If the count cannot be read (older relay, wrong key, unreachable) it does not block. Deploy the customer's relay with the generated `relay.env`
 (each session = one active remote connection). Name and logo are cosmetic and extractable from the exe.

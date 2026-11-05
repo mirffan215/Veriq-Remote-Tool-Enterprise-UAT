@@ -62,3 +62,29 @@ public sealed record ConnectMessage(string AccessKey, string Id)
         return m;
     }
 }
+
+public sealed record UsageMessage(string AccessKey)
+{
+    public byte[] Serialize() => new ProtoWriter().Str(AccessKey).ToArray();
+
+    public static UsageMessage Parse(byte[] p)
+    {
+        var r = new ProtoReader(p);
+        var m = new UsageMessage(r.Str(RelayLimits.MaxAccessKeyChars));
+        r.EnsureEnd();
+        return m;
+    }
+}
+
+public sealed record UsageReplyMessage(uint ActiveSessions)
+{
+    public byte[] Serialize() => new ProtoWriter().U32(ActiveSessions).ToArray();
+
+    public static UsageReplyMessage Parse(byte[] p)
+    {
+        var r = new ProtoReader(p);
+        var m = new UsageReplyMessage(r.U32());
+        r.EnsureEnd();
+        return m;
+    }
+}

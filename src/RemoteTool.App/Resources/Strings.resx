@@ -169,4 +169,5 @@ It will be saved in the "RemoteTool Received" folder. Only accept files you expe
  <data name="Firewall_Remove" xml:space="preserve"><value>Remove firewall rules</value></data>
  <data name="Brand_DevelopedBy" xml:space="preserve"><value>Developed by {0}</value></data>
  <data name="Brand_Users" xml:space="preserve"><value>Up to {0} concurrent users</value></data>
+ <data name="Err_LimitReached" xml:space="preserve"><value>User limit reached: this organization allows up to {0} concurrent sessions. Try again when one ends.</value></data>
 </root>

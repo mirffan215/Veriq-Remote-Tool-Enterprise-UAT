@@ -194,3 +194,15 @@ public class RelayTests
         Assert.False(RelayEndpoint.TryParseList("", "k", "", out _));
     }
 }
+
+public class UsageQueryTests
+{
+    [Fact]
+    public async Task ReportsActiveSessionCount_AndReturnsNullForWrongKeyOrNoRelay()
+    {
+        await using var rig = await RelayRig.StartAsync();
+        Assert.Equal(0, await RelayClient.QueryActiveSessionsAsync(new[] { rig.Endpoint() }, default));
+        Assert.Null(await RelayClient.QueryActiveSessionsAsync(new[] { rig.Endpoint(key: "wrong") }, default));       // denied => unknown, never "blocked"
+        Assert.Null(await RelayClient.QueryActiveSessionsAsync(new[] { new RelayEndpoint("127.0.0.1", 1, "k") }, default));
+    }
+}

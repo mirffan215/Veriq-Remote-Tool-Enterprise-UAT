@@ -82,6 +82,7 @@ public sealed class RelayEngine
             {
                 case RelayMessageType.Register: await RegisterAsync(RegisterMessage.Parse(first.Payload), reader, writer, ip, ct).ConfigureAwait(false); break;
                 case RelayMessageType.Accept: await AcceptAsync(AcceptMessage.Parse(first.Payload), stream, ip, ct).ConfigureAwait(false); break;
+                case RelayMessageType.Usage: await UsageAsync(UsageMessage.Parse(first.Payload), writer, ip, ct).ConfigureAwait(false); break;
                 case RelayMessageType.Connect: await ConnectAsync(ConnectMessage.Parse(first.Payload), stream, writer, ip, ct).ConfigureAwait(false); break;
                 default: _log.LogDebug("unexpected first message from {Ip}", ip); break;
             }
@@ -178,6 +179,13 @@ public sealed class RelayEngine
         if (!p.HostStream.TrySetResult(stream)) return;
         using var reg = ct.Register(() => p.Done.TrySetCanceled());
         try { await p.Done.Task.ConfigureAwait(false); } catch (OperationCanceledException) { }
+    }
+
+    /// <summary>Reports the number of active sessions (a count only, no IDs) to a client that knows the access key.</summary>
+    private async Task UsageAsync(UsageMessage m, FrameWriter writer, string ip, CancellationToken ct)
+    {
+        if (!_connects.TryHit(ip) || !KeyOk(m.AccessKey)) { await writer.WriteAsync(RelayMessageType.Denied, ct).ConfigureAwait(false); return; }
+        await writer.WriteAsync(RelayMessageType.UsageReply, new UsageReplyMessage((uint)ActiveSessions).Serialize(), ct).ConfigureAwait(false);
     }
 
     // ---- viewer connection ------------------------------------------------------------------------

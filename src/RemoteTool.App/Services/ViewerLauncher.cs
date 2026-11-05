@@ -54,6 +54,13 @@ public sealed class ViewerLauncher
                 var key = string.IsNullOrEmpty(s.RelayAccessKeyProtected) ? "" : _protector.Unprotect(s.RelayAccessKeyProtected);
                 if (!RelayEndpoint.TryParseList(s.RelayAddress, key, s.RelayFingerprint, out var relays))
                     throw new ConnectFailedException(ConnectFailure.Network, Localization.Loc.T("Err_NoRelay"));
+                // In-exe seat limit (set at build time): refuse early with a clear message. The relay enforces the same limit; this check is best effort.
+                var limit = BrandingLoader.Branding.MaxConcurrentUsers;
+                if (limit > 0 && await RelayClient.QueryActiveSessionsAsync(relays, ct) is { } active && active >= limit)
+                {
+                    _audit.Write("user_limit_reached", ("active", active), ("limit", limit));
+                    throw new ConnectFailedException(ConnectFailure.Busy, Localization.Loc.F("Err_LimitReached", limit));
+                }
                 return await RelayClient.ConnectToHostAsync(relays, byId.Id, ct);
             }
             case ConnectTarget.Direct d:

@@ -41,10 +41,13 @@ public enum RelayMessageType : byte
     NotFound = 0x88,
     RelayPing = 0x89,
     RelayPong = 0x8A,
+    /// <summary>Viewer asks the relay how many sessions are active (answered with <see cref="UsageReply"/>); used for the in-exe user limit.</summary>
+    Usage = 0x8B,
+    UsageReply = 0x8C,
 }
 
 public static class MessageTypes
 {
     public static bool IsKnownPeer(byte t) => t is >= 1 and <= 22;
-    public static bool IsKnownRelay(byte t) => t is >= 0x80 and <= 0x8A;
+    public static bool IsKnownRelay(byte t) => t is >= 0x80 and <= 0x8C;
 }

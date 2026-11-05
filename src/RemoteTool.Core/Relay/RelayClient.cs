@@ -110,6 +110,28 @@ public static class RelayClient
         }
     }
 
+    /// <summary>
+    /// Asks the first reachable relay how many sessions are active. Returns null when it cannot be determined (relay unreachable, access denied,
+    /// or an older relay that does not know the query): callers must then NOT block, the relay's own limit still applies.
+    /// </summary>
+    public static async Task<int?> QueryActiveSessionsAsync(IReadOnlyList<RelayEndpoint> relays, CancellationToken ct)
+    {
+        foreach (var ep in relays)
+        {
+            try
+            {
+                using var c = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                c.CancelAfter(TimeSpan.FromSeconds(6));
+                await using var s = await OpenAsync(ep, c.Token).ConfigureAwait(false);
+                await new FrameWriter(s).WriteAsync(RelayMessageType.Usage, new UsageMessage(ep.AccessKey).Serialize(), c.Token).ConfigureAwait(false);
+                var reply = await new FrameReader(s, MessageTypes.IsKnownRelay, RelayLimits.MaxControlPayload).ReadAsync(c.Token).ConfigureAwait(false);
+                if (reply.Type == (byte)RelayMessageType.UsageReply) return (int)Math.Min(UsageReplyMessage.Parse(reply.Payload).ActiveSessions, int.MaxValue);
+            }
+            catch (Exception e) when (e is not OperationCanceledException || !ct.IsCancellationRequested) { }
+        }
+        return null;
+    }
+
     /// <summary>Failover: tries each relay in order until one pairs us with the host.</summary>
     public static async Task<Stream> ConnectToHostAsync(IReadOnlyList<RelayEndpoint> relays, string id, CancellationToken ct)
     {
