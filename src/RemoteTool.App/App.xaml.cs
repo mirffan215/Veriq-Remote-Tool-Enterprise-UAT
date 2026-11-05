@@ -50,6 +50,8 @@ public partial class App : Application
         hostAudit.Write("id_issued", ("id", store.Current.Id), ("firstRun", firstRun));
 
         var protector = new DpapiProtector();
+        BrandingLoader.Load();
+        hostAudit.Write("branding", ("organization", BrandingLoader.Branding.Organization), ("maxConcurrentUsers", BrandingLoader.Branding.MaxConcurrentUsers));
         ApplyLanguage(store.Current.Language);
         ThemeManager.Apply(store.Current.Theme);
         var access = new PermanentPasswordStore(Path.Combine(paths.SettingsDirectory, "access.json"), protector);   // optional "access password" of this PC

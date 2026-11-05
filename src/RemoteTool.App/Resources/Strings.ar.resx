@@ -167,4 +167,6 @@
  <data name="Firewall_Wide" xml:space="preserve"><value>السماح أيضًا بالشبكات الداخلية الأخرى (10.x و172.16-31.x و192.168.x) - مطلوب عندما تكون الأجهزة في شبكات فرعية مختلفة</value></data>
  <data name="Firewall_Add" xml:space="preserve"><value>فتح جدار الحماية لـ RemoteTool</value></data>
  <data name="Firewall_Remove" xml:space="preserve"><value>إزالة قواعد جدار الحماية</value></data>
+ <data name="Brand_DevelopedBy" xml:space="preserve"><value>تطوير {0}</value></data>
+ <data name="Brand_Users" xml:space="preserve"><value>حتى {0} مستخدمين متزامنين</value></data>
 </root>

@@ -39,6 +39,20 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    Per-organization branding (name, logo, concurrent users, developer). BrandingDir holds branding.json (+ optional logo.png); scripts/build-wizard.ps1 creates it.
+        dotnet publish -p:BrandingDir=C:\path\to\branding\acme
+  -->
+  <PropertyGroup>
+    <BrandingDir Condition="'$(BrandingDir)' == ''">$(RT_BRANDING_DIR)</BrandingDir>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(BrandingDir)' != '' And Exists('$(BrandingDir)\branding.json')">
+    <EmbeddedResource Include="$(BrandingDir)\branding.json" LogicalName="RemoteTool.branding.json" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(BrandingDir)' != '' And Exists('$(BrandingDir)\logo.png')">
+    <EmbeddedResource Include="$(BrandingDir)\logo.png" LogicalName="RemoteTool.logo.png" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- The WPF SDK omits System.IO from implicit usings (Path clashes with System.Windows.Shapes.Path); this project never imports Shapes. -->
     <Using Include="System.IO" />

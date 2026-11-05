@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS  Builds, tests and publishes the portable RemoteTool.exe (single file, self-contained, no installer).
 .PARAMETER SignThumbprint  Optional code-signing certificate thumbprint (cert store). Unsigned remote tools are often flagged by AV.
+.PARAMETER BrandingDir     Folder with branding.json (+ logo.png) to embed: organization name, logo, concurrent users, developer. Created by build-wizard.ps1.
 .PARAMETER SkipTests       Skip unit/integration tests (not recommended).
 #>
 param(
@@ -8,6 +9,7 @@ param(
     [string]$Output = "$PSScriptRoot\..\artifacts\app",
     [string]$SignThumbprint = "",
     [string]$TimestampUrl = "http://timestamp.digicert.com",
+    [string]$BrandingDir = "",
     [switch]$SkipTests
 )
 $ErrorActionPreference = "Stop"
@@ -25,7 +27,9 @@ try {
     }
 
     if (Test-Path $Output) { Remove-Item -Recurse -Force $Output }
-    dotnet publish src/RemoteTool.App -c $Configuration -r win-x64 --self-contained true `
+    $brandArgs = @()
+    if ($BrandingDir) { $brandArgs = "-p:BrandingDir=$((Resolve-Path $BrandingDir).Path)" }
+    dotnet publish src/RemoteTool.App -c $Configuration -r win-x64 --self-contained true @brandArgs `
         -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true `
         -o $Output
     if ($LASTEXITCODE -ne 0) { throw "Publish failed" }

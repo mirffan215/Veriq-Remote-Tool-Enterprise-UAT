@@ -8,6 +8,7 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
     <!-- Your address -->
@@ -94,5 +95,17 @@
         </Grid>
       </TabItem>
     </TabControl>
+
+    <!-- Organization branding (set at build time) -->
+    <Grid Grid.Row="3" Margin="0,12,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Image x:Name="BrandLogo" Height="28" Margin="0,0,10,0" Visibility="Collapsed" />
+      <TextBlock x:Name="BrandOrgText" Grid.Column="1" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+      <TextBlock x:Name="BrandDevText" Grid.Column="2" Foreground="{DynamicResource MutedBrush}" FontSize="12" VerticalAlignment="Center" />
+    </Grid>
   </Grid>
 </Window>

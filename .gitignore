@@ -6,3 +6,6 @@ artifacts/
 *.user
 .vs/
 TestResults/
+
+# per-organization branding output (may contain customer logos)
+/branding/

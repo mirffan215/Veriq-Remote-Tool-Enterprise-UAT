@@ -167,4 +167,6 @@ It will be saved in the "RemoteTool Received" folder. Only accept files you expe
  <data name="Firewall_Wide" xml:space="preserve"><value>Also allow other internal networks (10.x, 172.16-31.x, 192.168.x) - needed when computers are on different subnets</value></data>
  <data name="Firewall_Add" xml:space="preserve"><value>Open firewall for RemoteTool</value></data>
  <data name="Firewall_Remove" xml:space="preserve"><value>Remove firewall rules</value></data>
+ <data name="Brand_DevelopedBy" xml:space="preserve"><value>Developed by {0}</value></data>
+ <data name="Brand_Users" xml:space="preserve"><value>Up to {0} concurrent users</value></data>
 </root>

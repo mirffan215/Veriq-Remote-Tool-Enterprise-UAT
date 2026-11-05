@@ -24,10 +24,20 @@ public partial class MainWindow : Window
     private readonly ViewerLauncher _viewer;
     private CancellationTokenSource? _connectCts;
 
+    private void ApplyBranding()
+    {
+        var b = BrandingLoader.Branding;
+        if (b.Organization.Length > 0) { Title = b.Organization + " · " + Loc.T("App_Title"); BrandOrgText.Text = b.Organization; }
+        if (BrandingLoader.Logo is { } logo) { BrandLogo.Source = logo; BrandLogo.Visibility = Visibility.Visible; }
+        var dev = Loc.F("Brand_DevelopedBy", b.DevelopedBy);
+        BrandDevText.Text = b.MaxConcurrentUsers > 0 ? dev + " · " + Loc.F("Brand_Users", b.MaxConcurrentUsers) : dev;
+    }
+
     public MainWindow(SettingsStore store, ISecretProtector protector, HostController host, ViewerLauncher viewer, PermanentPasswordStore access)
     {
         InitializeComponent();
         FlowDirection = Loc.Flow;
+        ApplyBranding();
         _store = store;
         _protector = protector;
         _host = host;

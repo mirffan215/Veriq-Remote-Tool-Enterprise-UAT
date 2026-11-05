@@ -123,3 +123,22 @@ public class DefaultsAndAccessTests
         finally { Directory.Delete(dir, true); }
     }
 }
+
+public class BrandingTests
+{
+    [Fact]
+    public void ParsesFields_ClampsUsers_StripsControlChars_AndGarbageFallsBackToDefault()
+    {
+        var b = Branding.Parse("{\"organization\":\"  Acme\\n Corp \",\"maxConcurrentUsers\":25,\"developedBy\":\"Toolveriq\"}");
+        Assert.Equal(("Acme Corp", 25, "Toolveriq"), (b.Organization, b.MaxConcurrentUsers, b.DevelopedBy));
+        Assert.Equal(Branding.MaxUsersLimit, Branding.Parse("{\"maxConcurrentUsers\":99999999}").MaxConcurrentUsers);
+        Assert.Equal(0, Branding.Parse("{\"maxConcurrentUsers\":-5}").MaxConcurrentUsers);
+        Assert.Equal(80, Branding.Parse("{\"organization\":\"" + new string('x', 500) + "\"}").Organization.Length);
+        Assert.Equal("Toolveriq", Branding.Parse("{\"organization\":\"A\"}").DevelopedBy);
+        foreach (var junk in new[] { "", "{", "[]", "null", "{\"maxConcurrentUsers\":\"7\"}" })
+            Assert.Equal(Branding.Default.MaxConcurrentUsers, Branding.Parse(junk).MaxConcurrentUsers);
+    }
+
+    [Fact]
+    public void RoundTripsArabicNames() => Assert.Equal("شركة النور", Branding.Parse(new Branding("شركة النور", 5, "Toolveriq").ToJson()).Organization);
+}
